@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ESP Datalogging Firebase App</title>
+
+    <!-- include Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+
+    <!-- include only the Firebase features as you need -->
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+
+    <script>
+      // Replace with your app config object
+      const firebaseConfig = {
+        apiKey: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        authDomain: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        databaseURL: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        projectId: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        storageBucket: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        messagingSenderId: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION",
+        appId: "REPLACE_WITH_YOUR_Firebase_CONFIGURATION"
+      };
+
+
+
+
+
+      // Initialize firebase
+      firebase.initializeApp(firebaseConfig);
+
+      // Make auth and database references
+      const auth = firebase.auth();
+      const db = firebase.database();
+
+    </script>
+
+    <!-- include highchartsjs to build the charts-->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <!-- include to use jquery-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!--include icons from fontawesome-->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+    <!--reference for favicon-->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!--reference a stylesheet-->
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+  </head>
+
+  <body>
+
+    <!--TOP BAR-->
+    <div class="topnav">
+      <h1>Shindo UdeA <i class="fas fa-clipboard-list"></i></h1>
+    </div>
+
+    <!--AUTHENTICATION BAR (USER DETAILS/LOGOUT BUTTON)-->
+    <div id="authentication-bar" style="display: none;">
+      <p><span id="authentication-status">User logged in</span>
+        <span id="user-details">USEREMAIL</span>
+        <a href="/" id="logout-link">(logout)</a>
+      </p>
+    </div>
+
+    <!--LOGIN FORM-->
+    <form id="login-form" style="display: none;">
+      <div class="form-elements-container">
+        <label for="input-email"><b>Email</b></label>
+        <input type="text" placeholder="Enter Username" id="input-email" required>
+
+        <label for="input-password"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" id="input-password" required>
+
+        <button type="submit" id="login-button">Login</button>
+        <p id="error-message" style="color:red;"></p>
+      </div>
+    </form>
+
+    <!--CONTENT (SENSOR READINGS)-->
+    <div class="content-sign-in" id="content-sign-in" style="display: none;">
+
+      <!--LAST UPDATE-->
+      <p><span class ="date-time">Last update: <span id="lastUpdate"></span></span></p>
+      <p>
+        Cards: <input type="checkbox" id="cards-checkbox" name="cards-checkbox" checked>
+        Charts: <input type="checkbox" id="charts-checkbox" name="charts-checkbox" unchecked>
+      </p>
+      <div id="cards-div">
+        <div class="cards">
+          <!--Aceleración-->
+          
+          <!--IfF Max-->
+          <div class="card">
+            <p><i class="fas fa-house-damage" style="color:#A62639;"></i>IfFmax</p>
+            <p><span class="reading"><span id="IfFmax"></span> Shindo</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button to redirect to seismic intensity explanation -->
+      <p>
+        <a href="https://www.data.jma.go.jp/multi/quake/quake_advisory.html?lang=es" target="_blank">
+          <button type="button">Explicación sobre intensidad sísmica</button>
+        </a>
+      </p>
+
+      <!--CHARTS-->
+      <div id="charts-div" style="display:none">
+        <!--SET NUMBER OF READINGS INPUT FIELD-->
+        <div>
+          <p> Number of readings: <input type="number" id="charts-range"></p>
+        </div>
+        
+        <!--IfFmax-CHART-->
+        <div class="cards">
+          <div class="card">
+            <p><i class="fas fa-house-damage" style="color:#A62639;"></i> IfFmax CHART</p>
+            <div id="chart-IfFmax" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+
+    <!--BUTTONS TO HANDLE DATA-->
+    <p>
+      <!--View data button-->
+      <button id="view-data-button">View all data</button>
+      <!--Hide data button-->
+      <button id="hide-data-button" style= "display:none;">Hide data</button>
+      <!--Delete data button-->
+      <button id="delete-button" class="deletebtn">Delete data</button>
+    </p>
+    <!--Modal to delete data-->
+    <div id="delete-modal" class="modal" sytle="display:none">
+      <span onclick = "document.getElementById('delete-modal').style.display='none'" class="close" title="Close Modal">×</span>
+      <form id= "delete-data-form" class="modal-content" action="/">
+        <div class="container">
+          <h1>Delete Data</h1>
+          <p>Are you sure you want to delete all data from database?</p>
+          <div class="clearfix">
+            <button type="button" onclick="document.getElementById('delete-modal').style.display='none'" class="cancelbtn">Cancel</button>
+            <button type="submit" onclick="document.getElementById('delete-modal').style.display='none'" class="deletebtn">Delete</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!--TABLE WITH ALL DATA-->
+    <div class ="cards">
+      <div class="card" id="table-container" style= "display:none;">
+        <table id="readings-table">
+            <tr id="theader">
+              <th>Timestamp</th>             
+              <th>IfFmax</th>
+            </tr>
+            <tbody id="tbody">
+            </tbody>
+        </table>
+        <p><button id="load-data" style= "display:none;">More results...</button></p>
+      </div>
+    </div>
+
+    <!-- Button to download table data as JSON -->
+    <p><button id="download-json-button">Download Data as JSON</button></p>
+
+  </div>
+
+  <script>
+    document.getElementById('download-json-button').addEventListener('click', function () {
+      // Get the table data
+      const table = document.getElementById('readings-table');
+      const rows = table.getElementsByTagName('tr');
+      const data = [];
+
+      // Loop through rows and cells to extract data
+      for (let i = 1; i < rows.length; i++) { // Start from 1 to skip the header
+        const cells = rows[i].getElementsByTagName('td');
+        const rowData = {
+          timestamp: cells[0].innerText,
+          ifFmax: cells[1].innerText
+        };
+        data.push(rowData);
+      }
+
+      // Create a JSON string from the data
+      const jsonString = JSON.stringify(data, null, 2);
+
+      // Create a Blob from the JSON string
+      const blob = new Blob([jsonString], { type: 'application/json' });
+
+      // Create a link element and set it to download the Blob
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'table_data.json';
+
+      // Trigger the download by simulating a click on the link
+      link.click();
+    });
+  </script>
+
+    <!--INCLUDE JS FILES-->
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/charts-definition.js"></script>
+    <script src="scripts/index.js"></script>
+
+  </body>
+
+</html>
