@@ -1,3 +1,4 @@
+
 # Medición de un Shindo en tiempo real con un ESP32
 
 Acelerógrafo que calcula de la intensidad sísmica japonesa (Shindo) utilizando un ESP32 y un MPU6050.
@@ -52,7 +53,10 @@ Al calibrar el MPU6050 este tienden a los siguientes valores:
 |0|0|16384|
 
 Con el objetivo de poder eliminar el valor de la gravedad ($980 gal$),se utiliza un filtro de paso alto en software a 0.2Hz y un filtro de paso bajo a 5Hz con un intervalo de muestreo de 10Hz.[6]
+
 Para normalizar el valor de la aceleración del sensor MPU6050, después de haber usado el filtro, se utiliza la siguiente expresión:
 $$a_f=\frac{980.0 }{16384}\sqrt{a_x²+a_y+a_z²} gal$$
-Luego se calcula el Shindo con la aceleración normalizada.
-En este programa, el IfF se mantiene cada 100ms durante 3 segundos en el búfer deslizante (30 muestras) y se ordena cada 100ms para encontrar el tercer valor más alto, correspondiente a la regla de 0.3 segundos.
+
+Luego se calcula el $I_f$ con la aceleración normalizada.
+
+En este programa, el $I_f$ se mantiene cada 100ms durante 3 segundos en el búfer deslizante (30 muestras) y se ordena cada 100ms para encontrar el tercer valor más alto, correspondiente a la regla de 0.3 segundos.
