@@ -42,9 +42,12 @@ La escala Shindo se divide en 10 niveles, que se identifican con números del 0 
 ## Descripción del programa
 
 Este programa utiliza un  MPU6050, el cual mide las aceleraciones en todos los ejes,los normaliza y calcula la intensidad sísmica japonesa (shindo) .
+
 El programa simplifica los métodos que se utilizan para calcular el Shindo, ya que para esto se necesita el espectro de onda completo.[3]
+
 Lo que realiza el programa es que proporciona IfF en tiempo real utilizando un búfer deslizante de 3 segundos (30 muestras) y un filtro digital simplificado de paso bajo/alto en el dominio del tiempo.
 EL MPU6050 es una unidad de medición inercial o IMU (Inertial Measurment Units) de 6 grados de libertad (DoF) pues combina un acelerómetro de 3 ejes y un giroscopio de 3 ejes.[4]
+
 Los rangos de inicializacion del acelerometro es de $\pm2g$ en cada uno de los ejes. Teniendo en cuenta que la resolución de las lecturas es de 16 bits por lo que el rango de lectura es de -32768 a 32767.[5] 
 Al calibrar el MPU6050 este tienden a los siguientes valores:
 
