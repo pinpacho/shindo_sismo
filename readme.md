@@ -40,26 +40,94 @@ La escala Shindo se divide en 10 niveles, que se identifican con números del 0 
 
 
 ## Descripción del programa
-
 Este programa utiliza un  MPU6050, el cual mide las aceleraciones en todos los ejes,los normaliza y calcula la intensidad sísmica japonesa (shindo) .
 
 El programa simplifica los métodos que se utilizan para calcular el Shindo, ya que para esto se necesita el espectro de onda completo.[3]
 
 Lo que realiza el programa es que proporciona IfF en tiempo real utilizando un búfer deslizante de 3 segundos (30 muestras) y un filtro digital simplificado de paso bajo/alto en el dominio del tiempo.
-EL MPU6050 es una unidad de medición inercial o IMU (Inertial Measurment Units) de 6 grados de libertad (DoF) pues combina un acelerómetro de 3 ejes y un giroscopio de 3 ejes.[4]
+EL MPU6050 es una unidad de medición inercial o IMU (Inertial Measurment Units) de 6 grados de libertad (DoF) pues combina un acelerómetro de 3 ejes y un giroscopio de 3 ejes.[6]
 
-Los rangos de inicializacion del acelerometro es de $\pm2g$ en cada uno de los ejes. Teniendo en cuenta que la resolución de las lecturas es de 16 bits por lo que el rango de lectura es de -32768 a 32767.[5] 
+Los rangos de inicializacion del acelerometro es de $\pm2g$ en cada uno de los ejes. Teniendo en cuenta que la resolución de las lecturas es de 16 bits por lo que el rango de lectura es de -32768 a 32767.[7] 
 Al calibrar el MPU6050 este tienden a los siguientes valores:
 
 |**$a_x$**|**$a_y$**|**$a_z$**|
 |----------|----------|----------|
 |0|0|16384|
 
-Con el objetivo de poder eliminar el valor de la gravedad ($980 gal$),se utiliza un filtro de paso alto en software a 0.2Hz y un filtro de paso bajo a 5Hz con un intervalo de muestreo de 10Hz.[6]
+Con el objetivo de poder eliminar el valor de la gravedad ($980 gal$),se utiliza un filtro de paso alto en software a 0.2Hz y un filtro de paso bajo a 5Hz con un intervalo de muestreo de 10Hz.[8][9]
 
 Para normalizar el valor de la aceleración del sensor MPU6050, después de haber usado el filtro, se utiliza la siguiente expresión:
-$$a_f=\frac{980.0 }{16384}\sqrt{a_x²+a_y+a_z²} gal$$
+$$a_f=\frac{980.0 }{16384}\sqrt{a_x²+a_y²+a_z²} gal$$
 
 Luego se calcula el $I_f$ con la aceleración normalizada.
 
 En este programa, el $I_f$ se mantiene cada 100ms durante 3 segundos en el búfer deslizante (30 muestras) y se ordena cada 100ms para encontrar el tercer valor más alto, correspondiente a la regla de 0.3 segundos.
+
+
+### shindo_sismo.ino (Código en Arduino)
+
+El código para el ESP32 está escrito en Arduino y se encarga de leer los datos de los sensores y enviarlos a la base de datos Firebase[9]. A continuación se describe la estructura y funcionalidades principales del código:
+
+-   `esp32_datalogger.ino`: Este es el archivo principal del programa. Contiene la configuración inicial del ESP32 y el bucle principal del programa.
+-   `wifi_credentials.h`: Este archivo contiene las credenciales de la red WiFi a la que se conectará el ESP32. Debe ser creado y configurado por el usuario.
+-   `firebase_config.h`: Este archivo contiene la configuración de Firebase, incluyendo la URL de la base de datos y las credenciales de autenticación. Debe ser creado y configurado por el usuario.
+-   `sensor_readings.h`: Este archivo define las funciones para leer los datos de los sensores conectados al ESP32.
+-   `firebase_handler.h`: Este archivo define las funciones para enviar los datos a la base de datos Firebase.
+
+####  Uso
+
+1.  Configurar las credenciales de WiFi y Firebase en los archivos `wifi_credentials.h` y `firebase_config.h`, respectivamente.
+2.  Conectar los sensores al ESP32 según sea necesario.
+3.  Cargar el programa en el ESP32 utilizando el IDE de Arduino.
+4.  El ESP32 comenzará a leer los datos de los sensores y enviarlos a la base de datos Firebase.
+
+### Shindo_App
+
+El $I_f$ mas alto obtenido durante los últimos 30 segundos se envía a la base de datos en Firebase, ademas se envía el valor de $a_f$ y el timestamp.
+
+La interfaz web se utiliza para visualizar los datos almacenados en la base de datos Firebase en tiempo real[10]. A continuación se describe la estructura y funcionalidades principales del código HTML:
+
+-   `index.html`: Este archivo contiene la estructura HTML de la interfaz web.
+-   `style.css`: Este archivo contiene los estilos CSS aplicados a la interfaz web.
+-   `scripts/auth.js`: Este archivo contiene el código JavaScript para la autenticación de usuarios.
+-   `scripts/charts-definition.js`: Este archivo contiene el código JavaScript para definir los gráficos utilizados en la interfaz.
+-   `scripts/index.js`: Este archivo contiene el código JavaScript principal para interactuar con la base de datos Firebase y actualizar la interfaz en tiempo real.
+
+#### Uso
+
+1.  Abrir el archivo `index.html` en un navegador web.
+2.  Iniciar sesión con las credenciales de Firebase, si es necesario.
+3.  La interfaz mostrará los datos almacenados en la base de datos Firebase, incluyendo gráficos y tablas interactivas.
+4.  Los usuarios pueden interactuar con la interfaz para visualizar y manipular los datos según sea necesario.
+
+## Hardware
+
+-   ESP32devkit
+    
+-   GY-521 MPU6050 or MPU9250 board wired on I2C bus.    
+   
+    ```
+         SDA = GPIO_NUM_21 , SCL = GPIO_NUM_22   
+    ```
+ 
+
+## Librerias utilizadas
+
+* https://github.com/JonHub/Filters
+* https://github.com/emilv/ArduinoSort
+* https://github.com/mobizt/Firebase-ESP-Client
+* https://github.com/adafruit/Adafruit_Sensor``
+
+## Referencias
+
+1. https://www.jma.go.jp/jma/en/Activities/inttable.html
+2. https://en.wikipedia.org/wiki/Japan_Meteorological_Agency_seismic_intensity_scale
+3. https://www-data-jma-go-jp.translate.goog/eqev/data/kyoshin/kaisetsu/calc_sindo.html?_x_tr_sl=auto&_x_tr_tl=es&_x_tr_hl=es&_x_tr_pto=nui
+4. https://www.hp1039.jishin.go.jp/eqchreng/at2-3.htm
+5. https://web.archive.org/web/20060909043549/http://geoinfo.usc.edu/gees/Reports/Report3/japan/KOBE.HTML
+6. https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf
+7. https://naylampmechatronics.com/blog/45_tutorial-mpu6050-acelerometro-y-giroscopio.html
+8. https://github.com/coniferconifer/ESP32-seismometer/tree/main
+9. https://www.hackster.io/mircemk/sensitive-mpu6050-seismometer-with-data-logger-9e6bf5
+10. https://randomnerdtutorials.com/esp32-data-logging-firebase-realtime-database/ 
+11. https://randomnerdtutorials.com/esp32-esp8266-firebase-gauges-charts/
