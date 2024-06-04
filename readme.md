@@ -1,4 +1,3 @@
-
 # Medición de un Shindo en tiempo real con un ESP32
 
 Acelerógrafo que calcula de la intensidad sísmica japonesa (Shindo) utilizando un ESP32 y un MPU6050.
@@ -66,17 +65,11 @@ En este programa, el $I_f$ se mantiene cada 100ms durante 3 segundos en el búfe
 
 ### shindo_sismo.ino (Código en Arduino)
 
-El código para el ESP32 está escrito en Arduino y se encarga de leer los datos de los sensores y enviarlos a la base de datos Firebase[9]. A continuación se describe la estructura y funcionalidades principales del código:
-
--   `esp32_datalogger.ino`: Este es el archivo principal del programa. Contiene la configuración inicial del ESP32 y el bucle principal del programa.
--   `wifi_credentials.h`: Este archivo contiene las credenciales de la red WiFi a la que se conectará el ESP32. Debe ser creado y configurado por el usuario.
--   `firebase_config.h`: Este archivo contiene la configuración de Firebase, incluyendo la URL de la base de datos y las credenciales de autenticación. Debe ser creado y configurado por el usuario.
--   `sensor_readings.h`: Este archivo define las funciones para leer los datos de los sensores conectados al ESP32.
--   `firebase_handler.h`: Este archivo define las funciones para enviar los datos a la base de datos Firebase.
+El código para el ESP32 está escrito en Arduino y se encarga de leer los datos de los sensores y enviarlos a la base de datos Firebase[9]. 
 
 ####  Uso
 
-1.  Configurar las credenciales de WiFi y Firebase en los archivos `wifi_credentials.h` y `firebase_config.h`, respectivamente.
+1.  Configurar las credenciales de WiFi y Firebase.
 2.  Conectar los sensores al ESP32 según sea necesario.
 3.  Cargar el programa en el ESP32 utilizando el IDE de Arduino.
 4.  El ESP32 comenzará a leer los datos de los sensores y enviarlos a la base de datos Firebase.
@@ -100,6 +93,33 @@ La interfaz web se utiliza para visualizar los datos almacenados en la base de d
 3.  La interfaz mostrará los datos almacenados en la base de datos Firebase, incluyendo gráficos y tablas interactivas.
 4.  Los usuarios pueden interactuar con la interfaz para visualizar y manipular los datos según sea necesario.
 
+## Simulaciones 
+
+Se realizaron dos simulaciones de sismos para corroborar el funcionamiento del código y observar el índice de intensidad sísmica ($I_f$). A continuación, se presentan los resultados de cada simulación comparados con los datos reales.
+
+### Primera Simulación: Datos del BCJ
+
+Para la primera simulación, se utilizaron los datos del Building Center of Japan (BCJ), que proporciona una muestra de las aceleraciones en los ejes X, Y y Z (mitad de X) cada 10 milisegundos. Los resultados obtenidos se muestran en el siguiente cuadro.
+
+| **Origen**       | **Intensidad Shindo** |
+|------------------|-----------------------|
+| **Simulación**   | 5.40                  |
+| **BCJ\[12\]**    | **5.5**               |
+
+*Comparación del If por la simulación y el BCJ*
+
+### Segunda Simulación: Datos del SGC (Tumaco, Colombia)
+
+Para la segunda simulación, se utilizaron los datos proporcionados por el Servicio Geológico Colombiano (SGC), específicamente del acelerógrafo ubicado en Tumaco, Nariño, que registró el sismo con epicentro en Guaitarilla, Nariño, el 9 de septiembre de 2013 a las 14:16\[13\]. La escala de intensidad utilizada por el SGC es la escala Mercalli modificada (EMS-98), en la cual este sismo tuvo un valor máximo de 7\[14\], equivalente a un Shindo de 5- (débil). Los resultados obtenidos se muestran en el cuadro V.
+
+| **Origen**         | **Intensidad Shindo** |
+|--------------------|-----------------------|
+| **Simulación**     | 4.49                  |
+| **SGC, Tumaco**    | **5-**                |
+
+*Comparación del If por la simulación y el SGC Tumaco*
+
+
 ## Hardware
 
 -   ESP32devkit
@@ -109,7 +129,8 @@ La interfaz web se utiliza para visualizar los datos almacenados en la base de d
     ```
          SDA = GPIO_NUM_21 , SCL = GPIO_NUM_22   
     ```
- 
+
+
 
 ## Librerias utilizadas
 
@@ -131,3 +152,6 @@ La interfaz web se utiliza para visualizar los datos almacenados en la base de d
 9. https://www.hackster.io/mircemk/sensitive-mpu6050-seismometer-with-data-logger-9e6bf5
 10. https://randomnerdtutorials.com/esp32-data-logging-firebase-realtime-database/ 
 11. https://randomnerdtutorials.com/esp32-esp8266-firebase-gauges-charts/
+12. https://www.bousai.go.jp/jishin/syuto/denkikasaitaisaku/2/pdf/siryou3.pdf
+13. http://bdrsnc.sgc.gov.co/sismologia1/HCG/acelerografos/consultas/Experta_RNAC/respuesta2.php?idsismo=20130209141606
+14. http://sish.sgc.gov.co/visor/sesionServlet?metodo=irAInfoDetallada&idSismo=74
